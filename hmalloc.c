@@ -1,8 +1,10 @@
-
+// HW08 Simple Allocator
+// By Elijah Steres, modified for thread safety by Luke Novak
+#include <pthread.h>
 #include <stdlib.h>
 #include <sys/mman.h>
 #include <stdio.h>
-
+#include <string.h>
 #include "hmalloc.h"
 
 /*
@@ -23,6 +25,7 @@ typedef struct free_block {
 const size_t PAGE_SIZE = 4096;
 static hm_stats stats; // This initializes the stats to 0.
 static free_block* free_list = NULL;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER; 
 
 long
 free_list_length()
@@ -111,31 +114,31 @@ hmalloc(size_t size)
     }
 
     if (size <= 4096) {
+        pthread_mutex_lock(&mutex);
         free_block** item = &free_list;
         while (*item != NULL) {
             if ((*item)->size >= size) {
                 free_block* block = *item;
                 *item = (*item)->next; // fix references
-
-                return div_block(block, block->size, size);
+                void* new_block = div_block(block, block->size, size);
+                pthread_mutex_unlock(&mutex);
+                return new_block;
             }
             item = &(*item)->next;
         }
-        void* new_page = mmap(((void*)free_list)-4096, size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, 0, 0)
-        ;
+        void* new_page = mmap(((void*)free_list)-4096, size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, 0, 0);
         stats.pages_mapped ++;
 
         *(size_t*)new_page = 4096;
-
-        return div_block(new_page, 4096, size);
+        new_page = div_block(new_page, 4096, size);
+        pthread_mutex_unlock(&mutex);
+        return new_page;
     }
     else {
         long pages = div_up(size, 4096);
         size = 4096*pages;
-        void* new_block = mmap(NULL, size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, 0, 0
-        );
+        void* new_block = mmap(NULL, size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, 0, 0);
         stats.pages_mapped += pages;
-
         *(size_t*)new_block = size;
         new_block += sizeof(size_t);
         return new_block;
@@ -153,9 +156,11 @@ hfree(void* item)
         munmap(block, block->size);
     }
     else {
+        pthread_mutex_lock(&mutex);
         if (free_list == NULL) {
             free_list = block;
             block->next = NULL;
+            pthread_mutex_unlock(&mutex);
             return;
         }
         free_block* prev = NULL;
@@ -171,6 +176,7 @@ hfree(void* item)
                 else {
                     free_list = block;
                 }
+                pthread_mutex_unlock(&mutex);
                 return;
             }
             prev = elem;
@@ -179,6 +185,16 @@ hfree(void* item)
         prev->next = block;
         block->next = NULL;
         coalesce(prev, block);
+        pthread_mutex_unlock(&mutex);
         return;
     }
+}
+
+void*
+realloc(void* item, size_t bytes)
+{
+    void* new_alloc = malloc(bytes);
+    memcpy(item, new_alloc, bytes);
+    free(item);
+
 }
