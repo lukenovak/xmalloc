@@ -7,12 +7,15 @@
 typedef struct bktnode {
     struct bktnode* next;
     struct bktnode** prevptr;
+    int arena;
     size_t size;
-    void[31] used;
+    void[32] used; 
+    //we obviously lose bytes b/c of this but it's pretty 
+    //negligible and a lot easier to implement
 } bktnode;
 
-bktnode* make_bktnode(size_t blocksize); 
+bktnode* make_bktnode(size_t chunksize, bktnode** prevptr, int arena); 
 void* get_chunk(bktnode* node);
-void free_chunk(void* item);
+void free_chunk(bktnode* node, void* item);
 
 #endif

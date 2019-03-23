@@ -3,14 +3,15 @@
 
 #include "bktnode.h"
 
-bktnode* make_bktnode(size_t size, bktnode** prevptr, bktnode* next) {
+bktnode* make_bktnode(size_t size, bktnode** prevptr, int arena) {
     bktnode* head = mmap(0, 4096, PROT_READ | PROT WRITE, 
         MAP_ANONYMOUS | MAP_PRIVATE, 0, 0);
     
-    head->next = next;
+    head->next = NULL;
     head->prevptr = prevptr;
+    head->arena = arena;
     head->size = size;
-    memset(&head->used, 0, 31);
+    memset(&head->used, 0, 32);
     return head;
 }
 
@@ -48,10 +49,9 @@ void insert(bktnode* node) {
     }
 }
 
-void free_chunk(void* item) {
-    bktnode* node = item & (~4095);
+void free_chunk(bktnode* node, void* item) {
     //get which chunk item is in
-    int chunknum = item-node-sizeof(bktnode);
+    int chunknum = (item-node-sizeof(bktnode))/node->size;
     //unset the appropriate bit in used
     node->used[chunknum/8] ^= 1<<(chunknum % 8);
     //if the previous node isn't pointing to us (i.e. we are not in the list)
