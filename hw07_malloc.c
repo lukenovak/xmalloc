@@ -27,7 +27,7 @@ xfree(void* ptr)
 void*
 xrealloc(void* prev, size_t bytes)
 {
-    //return hrealloc(prev, bytes);
+    return hrealloc(prev, bytes);
     return 0;
 }
 

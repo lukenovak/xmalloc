@@ -191,10 +191,11 @@ hfree(void* item)
 }
 
 void*
-realloc(void* item, size_t bytes)
+hrealloc(void* item, size_t bytes)
 {
-    void* new_alloc = malloc(bytes);
-    memcpy(item, new_alloc, bytes);
-    free(item);
+    void* new_alloc = hmalloc(bytes);
+    memcpy(new_alloc, item, bytes);
+    hfree(item);
+    return new_alloc;
 
 }
