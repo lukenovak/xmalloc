@@ -4,9 +4,7 @@
 #include "bktnode.h"
 
 bktnode* make_bktnode(size_t size, bktnode** prevptr, int arena) {
-    bktnode* head = mmap(0, 4096, PROT_READ | PROT WRITE, 
-        MAP_ANONYMOUS | MAP_PRIVATE, 0, 0);
-    
+    bktnode* head = slabmalloc();    
     head->next = NULL;
     head->prevptr = prevptr;
     head->arena = arena;
