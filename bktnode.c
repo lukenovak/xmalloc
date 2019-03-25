@@ -1,7 +1,9 @@
 #include <stdlib.h>
 #include <unistd.h>
-
+#include <sys/mman.h>
+#include <string.h>
 #include "bktnode.h"
+#include "slabmalloc.h"
 
 bktnode* make_bktnode(size_t size, bktnode** prevptr, int arena) {
     bktnode* head = slabmalloc();    

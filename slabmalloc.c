@@ -15,7 +15,7 @@ slabmalloc() {
         ++pages_alloced;
         return &pages[pages_alloced];
     }
-    pages = mmap(0, 4096, O_READ | O_WRITE, 
+    pages = mmap(0, 4096, PROT_READ | PROT_WRITE, 
         MAP_ANONYMOUS | MAP_PRIVATE | MAP_HUGETLB | MAP_HUGE_2MB, 1, 0);
     pages_alloced = 1;
     return pages;
