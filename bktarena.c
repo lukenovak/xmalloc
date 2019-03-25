@@ -4,9 +4,9 @@
 #include "bktalloc.h"
 #include "bktnode.h"
 
-bktalloc* make_bktalloc(void* start, int arena) {
-    memset(start, 0, sizeof(bktalloc));
-    bktalloc* allocer = (bktalloc*) start;
+bktarena* make_bktalloc(void* start, int arena) {
+    memset(start, 0, sizeof(bktarena));
+    bktarena* allocer = (bktarena*) start;
     allocer->arena = arena;
     allocer->mutex = pthread_mutex_init(&allocer->mutex, NULL);
     return start;
@@ -27,7 +27,7 @@ int find_bucket(size_t size) {
     }
 }
 
-void* bktmalloc(size_t size, bktalloc* allocer) {
+void* bktmalloc(size_t size, bktarena* allocer) {
     int bucketnum = find_bucket(size);
     if(allocer->buckets[bucketnum] == NULL) {
         allocer->buckets[bucketnum] = make_bktnode(1 << (bucketnum + 4), 

@@ -9,7 +9,7 @@ typedef struct bktnode {
     struct bktnode** prevptr;
     int arena;
     size_t size;
-    void[32] used; 
+    int used[8]; 
     //we obviously lose bytes b/c of this but it's pretty 
     //negligible and a lot easier to implement
 } bktnode;
