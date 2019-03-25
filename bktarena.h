@@ -1,6 +1,6 @@
 #include "bktnode.h"
-#ifndef BUCKET_ARENA
-#define BUCKET_ARENA
+#ifndef BUCKET_ARENA_H
+#define BUCKET_ARENA_H
 
 typedef struct bktarena {
     bktnode* buckets[7];
