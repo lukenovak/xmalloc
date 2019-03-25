@@ -5,11 +5,11 @@
 #define BUCKET_NODE_H
 
 typedef struct bktnode {
+    size_t size;
     struct bktnode* next;
     struct bktnode** prevptr;
     int arena;
-    size_t size;
-    void[32] used; 
+    void used[32]; 
     //we obviously lose bytes b/c of this but it's pretty 
     //negligible and a lot easier to implement
 } bktnode;

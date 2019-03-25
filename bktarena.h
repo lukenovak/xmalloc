@@ -1,14 +1,14 @@
 #include "bktnode.h"
-#ifndef BUCKET_ALLOCATOR
-#define BUCKET_ALLOCATOR
+#ifndef BUCKET_ARENA
+#define BUCKET_ARENA
 
-typedef struct bktalloc {
-    bktnode*[7] buckets;
+typedef struct bktarena {
+    bktnode* buckets[7];
     int arena;
     pthread_mutex_t mutex;
-} bktalloc;
+} bktarena;
 
-bktalloc* make_bktalloc(void* start);
-void* bktmalloc(size_t size, bktalloc* allocer);
+bktarena* make_bktarena(void* start, int arena);
+void* bktmalloc(size_t size, bktarena* allocer);
 void bktfree(bktnode* node, void* item);
 #endif
