@@ -17,7 +17,7 @@ bktnode* make_bktnode(size_t size, bktnode** prevptr, int arena) {
 
 void remove(bktnode* node) {
     *node->prevptr = node->next;
-    if(node->next != null) {
+    if(node->next != NULL) {
         node->next->prevptr = node->prevptr;
     }
 }
@@ -26,7 +26,7 @@ void* get_chunk(bktnode* node) {
     for(int i = 0; 8*sizeof(int)*i*node->size < 4096-sizeof(bktnode); i++) { //for each in used
         if(node->used[i] != 0) { //if all bits are not unset
             int j = __builtin_ffs(node->used[i])-1;
-            int mask << j; //make a mask for that bit
+            int mask = 1 << j; //make a mask for that bit
             node->used[i] ^= mask; //set it
             //if that was the last chunk
             if ((8*i + j)*node->size == 4096-sizeof(bktnode)) {
@@ -36,6 +36,7 @@ void* get_chunk(bktnode* node) {
             return (void*)node + sizeof(bktnode) + node->size*(8*i + j);
         }
     }
+    return NULL;
 }
 
 void insert(bktnode* node) {

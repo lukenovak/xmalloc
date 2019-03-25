@@ -59,11 +59,9 @@ void xfree(void* ptr) {
 }
 
 void* xrealloc(void* prev, size_t bytes) {
-    bktnode* node = prev & (~4095);
-    pthread_mutex_lock(&arenas[node->arena]);
-    void* newmem = bktmalloc(bytes, &arenas[node->arena]);
-    memcpy(newmem, prev, node->size);
-    bktfree(node, prev);
-    pthread_mutex_unlock(arenas[node->arena]);
+    void* newmem = xmalloc(bytes);
+    size_t* prevsize =  prev & (~4095);
+    memcpy(newmem, prev, *prevsize < bytes ? *prevsize : bytes);
+    xfree(prev);
     return newmem;
 }
