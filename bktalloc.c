@@ -1,5 +1,11 @@
-//TODO: map a page and make the requisite number of arenas
-//for now, I'm assuming they are in a global bktarena* arenas
+#include "bktarena.h"
+#include "bktnode.h"
+#include "xmalloc.h"
+#include <stdlib.h>
+#include <unistd.h>
+#include <pthread.h>
+#include <sys/sysinfo.h>
+#include <sys/mman.h>
 
 void make_arenas (void) __attribute__ ((constructor));
 
@@ -23,18 +29,32 @@ void takelock() {
 }
 
 void* xmalloc(size_t bytes) {
-    takelock();
-    void* mem = bktmalloc(bytes, arenas[preferred_arena]);
-    pthread_mutex_unlock(arenas[preferred_arena]->mutex);
-    return mem;
+    if (bytes > 1024) {
+        size_t* mem = mmap(NULL, bytes, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0);
+        *mem = bytes + sizeof(size_t);
+        return mem + 1;
+    }
+    else {
+        takelock();
+        void* mem = bktmalloc(bytes, arenas[preferred_arena]);
+        pthread_mutex_unlock(arenas[preferred_arena]->mutex);
+        return mem;
+    }
 }
 
 void xfree(void* ptr) {
-    bktnode* node = ptr & (~4095);
-    pthread_mutex_lock(arenas[node->arena]);
-    bktfree(node, arena);
-    pthread_mutex_unlock(arenas[node->arena]);
-    return;
+    size_t* size =  ptr & (~4095);
+    if (*size > 1024) {
+        bktnode* node = (bktnode*) size;
+        pthread_mutex_lock(arenas[node->arena]);
+        bktfree(node, node->arena);
+        pthread_mutex_unlock(arenas[node->arena]);
+        return;
+    }
+    else {
+        munmap(size, *size);
+        return;
+    }
 }
 
 void* xrealloc(void* prev, size_t bytes) {
