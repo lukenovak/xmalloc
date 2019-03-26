@@ -23,17 +23,20 @@ void remove(bktnode* node) {
 }
 
 void* get_chunk(bktnode* node) {
+    if(!(node->size && !(node->size & (node->size-1)))) {
+        return NULL;
+    }
     for(int i = 0; 8*sizeof(int)*node->size*i < 4096-sizeof(bktnode); i++) { //for each in used
         if(node->used[i] != 0) { //if all bits are not unset
             int j = __builtin_ffs(node->used[i])-1;
             int mask = 1 << j; //make a mask for that bit
-            node->used[i] ^= mask; //set it
+            node->used[i] ^= mask; //unset it
             //if that was the last chunk
-            if ((8*i*sizeof(int) + j + 1)*node->size >= 4096-sizeof(bktnode)) {
+            if ((8*i*sizeof(int) + j + 2)*node->size >= 4096-sizeof(bktnode)) {
                 remove(node); //remove this node from the list
             }
             //return the associated chunk
-            return (void*)node + sizeof(bktnode) + node->size*(8*i + j);
+            return (void*)node + sizeof(bktnode) + node->size*(8*i*sizeof(int) + j);
         }
     }
     return NULL;
@@ -49,8 +52,8 @@ void insert(bktnode* node) {
 void free_chunk(bktnode* node, void* item) {
     //get which chunk item is in
     int chunknum = (item-(void*)node-sizeof(bktnode))/node->size;
-    //unset the appropriate bit in used
-    node->used[chunknum/(8*sizeof(int))] ^= 1<<(chunknum % (8*sizeof(int)));
+    //set the appropriate bit in used
+    node->used[chunknum/(8*sizeof(int))] |= 1<<(chunknum % (8*sizeof(int)));
     //if the previous node isn't pointing to us (i.e. we are not in the list)
     if(*node->prevptr != node) {
         //put us back in the list

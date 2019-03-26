@@ -46,7 +46,7 @@ void* xmalloc(size_t bytes) {
 
 void xfree(void* ptr) {
     size_t* size = (size_t*) ((long)ptr & (~4095l));
-    if (*size < 1024) {
+    if (*size <= 1024) {
         bktnode* node = (bktnode*) size;
         pthread_mutex_lock(&arenas[node->arena].mutex);
         bktfree(node, ptr);
