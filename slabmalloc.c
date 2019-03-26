@@ -13,8 +13,11 @@ size_t PAGE_SIZE = 4096;
 void*
 slabmalloc() {
     if (pages && pages_alloced < 500) {
-        ++pages_alloced;
-        return pages + (PAGE_SIZE * pages_alloced);
+        void* mem = pages + (PAGE_SIZE * pages_alloced);
+        *(char*)mem = 0;
+        pages_alloced++;
+        return mem;
+
     }
     pages = mmap(0, 500 * PAGE_SIZE, PROT_READ | PROT_WRITE, 
         MAP_ANONYMOUS | MAP_PRIVATE, 1, 0);

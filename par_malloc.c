@@ -24,9 +24,8 @@ void make_arenas (void) {
 }
 
 void takelock() {
-    if (pthread_mutex_trylock(&arenas[preferred_arena].mutex) == EBUSY) {
+    while (pthread_mutex_trylock(&arenas[preferred_arena].mutex) == EBUSY) {
         preferred_arena = (preferred_arena + 1) % numarenas;
-        pthread_mutex_lock(&arenas[preferred_arena].mutex);
     }
 }
 

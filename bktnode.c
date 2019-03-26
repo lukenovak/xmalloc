@@ -23,17 +23,20 @@ void remove(bktnode* node) {
 }
 
 void* get_chunk(bktnode* node) {
-    if(!(node->size && !(node->size & (node->size-1)))) {
-        return NULL;
-    }
     for(int i = 0; 8*sizeof(int)*node->size*i < 4096-sizeof(bktnode); i++) { //for each in used
         if(node->used[i] != 0) { //if all bits are not unset
             int j = __builtin_ffs(node->used[i])-1;
             int mask = 1 << j; //make a mask for that bit
             node->used[i] ^= mask; //unset it
             //if that was the last chunk
-            if ((8*i*sizeof(int) + j + 2)*node->size >= 4096-sizeof(bktnode)) {
-                remove(node); //remove this node from the list
+            for (int k = i; k < 8; k++) {
+                int last = __builtin_ffs(node->used[k]);
+                if (last != 0 && 
+                        (8*sizeof(int)*k + last + 1) * node->size > 4096-sizeof(bktnode)) {
+                    //remove this from the list
+                    remove(node);
+                    break;
+                }
             }
             //return the associated chunk
             return (void*)node + sizeof(bktnode) + node->size*(8*i*sizeof(int) + j);
