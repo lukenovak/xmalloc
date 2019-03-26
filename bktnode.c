@@ -29,7 +29,7 @@ void* get_chunk(bktnode* node) {
             int mask = 1 << j; //make a mask for that bit
             node->used[i] ^= mask; //set it
             //if that was the last chunk
-            if ((8*i + j)*node->size == 4096-sizeof(bktnode)) {
+            if ((8*i*sizeof(int) + j)*node->size > 4096-sizeof(bktnode)) {
                 remove(node); //remove this node from the list
             }
             //return the associated chunk
