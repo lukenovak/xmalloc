@@ -16,23 +16,12 @@ bktarena* make_bktarena(void* start, int arena) {
 }
 
 int find_bucket(size_t size) {
-    if (size < 16) {
-        return 0;
-    }
-    else {
-        int count = 0;
-        while(size != 0) 
-        { 
-            size >>= 1; 
-            count += 1; 
-        } 
-
-        if (size && size != 1 << (count-1)) {
-            return count-5;
-        } else {
-            return count-4;
+    for (int i = 4; 1 << i <= 1024; i++) {
+        if (size <= 1 << i) {
+            return i-4;
         }
     }
+    return -1;
 }
 
 void* bktmalloc(size_t size, bktarena* allocer) {
