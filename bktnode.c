@@ -50,7 +50,7 @@ void free_chunk(bktnode* node, void* item) {
     //get which chunk item is in
     int chunknum = (item-(void*)node-sizeof(bktnode))/node->size;
     //unset the appropriate bit in used
-    node->used[chunknum/8] ^= 1<<(chunknum % 8);
+    node->used[chunknum/(8*sizeof(int))] ^= 1<<(chunknum % (8*sizeof(int)));
     //if the previous node isn't pointing to us (i.e. we are not in the list)
     if(*node->prevptr != node) {
         //put us back in the list
