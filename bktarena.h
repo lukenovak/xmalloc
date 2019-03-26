@@ -9,6 +9,7 @@ typedef struct bktarena {
 } bktarena;
 
 bktarena* make_bktarena(void* start, int arena);
+int find_bucket(size_t size);
 void* bktmalloc(size_t size, bktarena* allocer);
 void bktfree(bktnode* node, void* item);
 #endif
