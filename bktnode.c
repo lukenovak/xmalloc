@@ -31,10 +31,11 @@ void* get_chunk(bktnode* node) {
             //if that was the last chunk
             for (int k = i; k < 8; k++) {
                 int last = __builtin_ffs(node->used[k]);
-                if (last != 0 && 
-                        (8*sizeof(int)*k + last + 1) * node->size > 4096-sizeof(bktnode)) {
-                    //remove this from the list
-                    remove(node);
+                if (last != 0) { 
+                    if((8*sizeof(int)*k + last + 1) * node->size > 4096-sizeof(bktnode)) {
+                        //remove this from the list
+                        remove(node);
+                    }
                     break;
                 }
             }
