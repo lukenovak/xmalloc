@@ -46,6 +46,7 @@ void* get_chunk(bktnode* node) {
 }
 
 void insert(bktnode* node) {
+    node->next = *node->prevptr;
     *node->prevptr = node;
     if (node->next != NULL) {
         node->next->prevptr = &node->next;

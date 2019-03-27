@@ -16,7 +16,7 @@ bktarena* make_bktarena(void* start, int arena) {
 }
 
 int find_bucket(size_t size) {
-    for (int i = 4; 1 << i <= 1024; i++) {
+    for (int i = 4; 1 << i <= 2048; i++) {
         if (size <= 1 << i) {
             return i-4;
         }

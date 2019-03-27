@@ -23,14 +23,14 @@ void make_arenas (void) {
     }
 }
 
-void takelock() {
+static void takelock() {
     while (pthread_mutex_trylock(&arenas[preferred_arena].mutex) == EBUSY) {
         preferred_arena = (preferred_arena + 1) % numarenas;
     }
 }
 
 void* xmalloc(size_t bytes) {
-    if (bytes > 1024) {
+    if (bytes > 2048) {
         size_t* mem = mmap(NULL, bytes, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0);
         *mem = bytes + sizeof(size_t);
         return mem + 1;
@@ -45,7 +45,7 @@ void* xmalloc(size_t bytes) {
 
 void xfree(void* ptr) {
     size_t* size = (size_t*) ((long)ptr & (~4095l));
-    if (*size <= 1024) {
+    if (*size <= 2048) {
         bktnode* node = (bktnode*) size;
         pthread_mutex_lock(&arenas[node->arena].mutex);
         bktfree(node, ptr);

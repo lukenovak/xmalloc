@@ -3,7 +3,7 @@
 #define BUCKET_ARENA_H
 
 typedef struct bktarena {
-    bktnode* buckets[7];
+    bktnode* buckets[8];
     int arena;
     pthread_mutex_t mutex;
 } bktarena;

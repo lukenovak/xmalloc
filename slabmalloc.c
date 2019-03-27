@@ -6,16 +6,15 @@
 #include <sys/mman.h>
 
 // to keep track of the free pages
-__thread void* pages = NULL;
-__thread int pages_alloced = 0;
+void* pages = NULL;
+int pages_alloced = 0;
 size_t PAGE_SIZE = 4096;
 
 void*
 slabmalloc() {
-    if (pages && pages_alloced < 500) {
-        void* mem = pages + (PAGE_SIZE * pages_alloced);
-        *(char*)mem = 0;
-        pages_alloced++;
+    int page = __sync_fetch_and_add(&pages_alloced, 1);
+    if (pages && page < 500) {    
+        void* mem = pages + (PAGE_SIZE * page);
         return mem;
 
     }
