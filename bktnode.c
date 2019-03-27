@@ -6,7 +6,7 @@
 #include "slabmalloc.h"
 
 bktnode* make_bktnode(size_t size, bktnode** prevptr, bktnode* next) {
-    bktnode* head = slabmalloc();    
+    bktnode* head = slabmalloc(1);    
     head->next = NULL;
     head->prevptr = prevptr;
     head->next = next;

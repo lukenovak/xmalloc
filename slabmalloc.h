@@ -4,6 +4,6 @@
 #include <stddef.h>
 
 // mmaps a HUGE_PAGE and breaks it into a stack of normal pages
-void* slabmalloc();
+void* slabmalloc(int numpages);
 
 #endif
