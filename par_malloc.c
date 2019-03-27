@@ -1,5 +1,6 @@
 #include "bktarena.h"
 #include "bktnode.h"
+#include "slabmalloc.h"
 #include "xmalloc.h"
 #include <stdlib.h>
 #include <unistd.h>
@@ -31,7 +32,8 @@ static void takelock() {
 
 void* xmalloc(size_t bytes) {
     if (bytes > 2048) {
-        size_t* mem = mmap(NULL, bytes, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0);
+        int pages = bytes/4096 + 1;
+        size_t* mem = slabmalloc(pages);
         *mem = bytes + sizeof(size_t);
         return mem + 1;
     }
