@@ -7,14 +7,6 @@
 #include "bktnode.h"
 #include "bktarena.h"
 
-bktarena* make_bktarena(void* start, int arena) {
-    memset(start, 0, sizeof(bktarena));
-    bktarena* allocer = (bktarena*) start;
-    allocer->arena = arena;
-    pthread_mutex_init(&allocer->mutex, 0); 
-    return start;
-}
-
 int find_bucket(size_t size) {
     for (int i = 4; 1 << i <= 2048; i++) {
         if (size <= 1 << i) {
@@ -28,8 +20,19 @@ void* bktmalloc(size_t size, bktarena* allocer) {
     int bucketnum = find_bucket(size);
     if(allocer->buckets[bucketnum] == NULL) {
         allocer->buckets[bucketnum] = make_bktnode(1 << (bucketnum + 4), 
-                &allocer->buckets[bucketnum], allocer->arena);
+                &allocer->buckets[bucketnum], NULL);
     }
+    bktnode* node = allocer->buckets[bucketnum];
+    void* ptr = NULL;
+    while(node != NULL) {
+        ptr = get_chunk(allocer->buckets[bucketnum]);
+        if (ptr != NULL) {
+            return ptr;
+        }
+        node = node->next;
+    }
+    allocer->buckets[bucketnum] = make_bktnode(1 << (bucketnum + 4), 
+            &allocer->buckets[bucketnum], allocer->buckets[bucketnum]);
     return get_chunk(allocer->buckets[bucketnum]);
 }
 

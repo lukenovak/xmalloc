@@ -4,11 +4,8 @@
 
 typedef struct bktarena {
     bktnode* buckets[8];
-    int arena;
-    pthread_mutex_t mutex;
 } bktarena;
 
-bktarena* make_bktarena(void* start, int arena);
 int find_bucket(size_t size);
 void* bktmalloc(size_t size, bktarena* allocer);
 void bktfree(bktnode* node, void* item);
